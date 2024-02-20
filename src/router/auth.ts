@@ -9,15 +9,11 @@ const router:Router = Router()
 
 const prisma = new PrismaClient()
 
-const SecretKey = process.env.SecretKey
+const SecretKey:string = process.env.SecretKey || "my-secret"
 
 
 const getToken = (id:number, role: string):string | undefined=>{
-    if(SecretKey){
         return jwt.sign({id, role}, SecretKey)  
-    }else{
-        return undefined
-    }
 }
 const isValidMail = (mail:string):boolean=>{
     return /^\S+@\S+\.\S+$/.test(mail)
