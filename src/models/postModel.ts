@@ -24,7 +24,6 @@ const getPost = async(id:number):Promise<TPost | null>=>{
         return null
     }
     return post
-
 }
 
 const deletePost = async (id:number):Promise<TPost | null>=>{
@@ -60,6 +59,5 @@ const addContent = async (id:number, req:Request)=>{
         }
     })
 }
-
 
 export {createPost, getPost, deletePost, updataPost, addContent}
