@@ -3,26 +3,32 @@ import bcryt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import {TypeInfoBodyLog, TypeInfoBodyReg} from "../type"
-import {getUserByName, getUserByMail, createUser} from '../models/authModel'
+import { getUserByMail, createUser} from '../models/authModel'
 
 const SecretKey:string = process.env.SecretKey || "my-secret"
 
 
-const getToken = (id:number, role: string):string | undefined=>{
+export const getToken = (id:number, role: string):string | undefined=>{
         return jwt.sign({id, role}, SecretKey)  
 }
+export const getHashPassword =  async (password:string)=> bcryt.hashSync(password, 5)
 
 const isValidMail = (mail:string):boolean=>{
     return /^\S+@\S+\.\S+$/.test(mail)
 }
 
-
 const regController = async (req:Request, res:Response)=>{
     try{
-        const {mail, password, userName, name}:TypeInfoBodyReg= req.body
+        const {mail, password, name}:TypeInfoBodyReg= req.body
 
-        if(!isValidMail(mail) || password.replace(" ", '').length < 3 || userName.replace(" ", "").length < 3){
-            return res.json({
+        if(!mail || !password || !name){
+            return res.status(400).json({
+                msg: "невалидные данные"
+            })
+        }
+
+        if(!isValidMail(mail) || password.replace(" ", '').length < 3, name.replace(" ", "").length < 3){
+            return res.status(400).json({
                 msg: "невалидные данные"
             })
         }
@@ -30,30 +36,21 @@ const regController = async (req:Request, res:Response)=>{
         const user_mail = await getUserByMail(mail)
 
         if(user_mail){
-            return res.json({
+            return res.status(400).json({
                 msg: "пользователь с таким mail уже существует"
             })
         }
-
-        const user_userName = await  getUserByName(userName)
-
-        if(user_userName){
-            return res.json({
-                msg: "пользователь с таким userName уже существует"
-            })
-        }
     
-        const hashPassword = bcryt.hashSync(password, 5)
+        const hashPassword = await getHashPassword(password)
 
-        await createUser(mail, hashPassword, userName.toLowerCase(), name)
+        await createUser(mail, hashPassword, name)
 
-        return res.json({
+        return res.status(200).json({
             msg: 'пользователь был создан'
         })
-
     }catch(e){
         console.log(e)
-        return res.json({
+        return res.status(500).json({
             msg: 'Eror'
         })
     }
@@ -63,7 +60,7 @@ const logController = async (req:Request, res:Response)=>{
         const {mail, password}:TypeInfoBodyLog= req.body
         
         if(!isValidMail(mail) || password.replace(" ", '').length < 3){
-            return res.json({
+            return res.status(400).json({
                 msg: "невалидные данные"
             })
         }
@@ -71,7 +68,7 @@ const logController = async (req:Request, res:Response)=>{
         const user = await getUserByMail(mail)
 
         if(!user){
-            return res.json({
+            return res.status(400).json({
                 msg: "неправильный логин или пароль"
             })
         }
@@ -79,24 +76,21 @@ const logController = async (req:Request, res:Response)=>{
         const isValidPassword = await bcryt.compare(password, user.password)
 
         if(!isValidPassword){
-            return res.json({
+            return res.status(400).json({
                 msg: "неправильный логин или пароль"
             })
         }
-
         const token = getToken(user.id, user.role)
 
-        res.json({
+        return res.status(200).json({
             token: "Bearer " + token
         })
     }catch(e){
         console.log(e)
-        res.json({
+        res.status(500).json({
             msg: "Eror"
         })
     }
-
-
 }
 
 

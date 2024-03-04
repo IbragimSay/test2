@@ -2,9 +2,13 @@ import { NextFunction,Request, Response } from "express";
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import {PrismaClient} from"@prisma/client"
+import {createClient} from 'redis'
 const prisma = new PrismaClient()
 const SecretKey = process.env.SecretKey || 'my-secret'
+
+const client = createClient()
 export = async (req:Request, res: Response, next: NextFunction)=>{
+    await client.connect()
     try{
         const token:string | undefined = req.headers.authorization?.split(' ')[1]
         const id:number = Number(req.params.id)
@@ -43,6 +47,8 @@ export = async (req:Request, res: Response, next: NextFunction)=>{
                 msg: "у вас нет прав чтобы добавлять контент на этот пост"
             })
         }
+        await client.DEL(`user${post.userId}`)
+        
         next()
 
     }catch(e){

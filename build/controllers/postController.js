@@ -7,7 +7,9 @@ exports.upload = exports.addContentController = exports.updataPostController = e
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv/config");
 const multer_1 = __importDefault(require("multer"));
+const redis_1 = require("redis");
 const postModel_1 = require("../models/postModel");
+const client = (0, redis_1.createClient)();
 const SecretKey = process.env.SecretKey || 'my-secret';
 const getPayload = (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -28,23 +30,26 @@ const createPostController = async (req, res) => {
         const { title } = req.body;
         const payload = getPayload(req, res);
         if (!title) {
-            return res.json({
+            return res.status(400).json({
                 msg: "данные невалидные"
             });
         }
         if (!payload) {
-            return res.json({
+            return res.status(400).json({
                 msg: "вы не авторизованы"
             });
         }
         await (0, postModel_1.createPost)(payload, title);
-        return res.json({
+        await client.connect();
+        await client.DEL(`user${payload.id}`);
+        await client.disconnect();
+        return res.status(200).json({
             msg: "пост добавлен"
         });
     }
     catch (e) {
         console.log(e);
-        res.json({
+        res.status(500).json({
             msg: "Eror"
         });
     }
@@ -53,35 +58,43 @@ exports.createPostController = createPostController;
 const deletePostController = async (req, res) => {
     try {
         const id = Number(req.params.id);
-        console.log(id);
         const payload = getPayload(req, res);
         if (!payload) {
-            return res.json({
+            return res.status(400).json({
                 msg: "вы не авторизованы"
             });
         }
         const post = await (0, postModel_1.getPost)(id);
         if (!post) {
-            return res.json({
+            return res.status(400).json({
                 msg: "такого поста не существует"
             });
         }
         if (payload.role == "Admin") {
-            (0, postModel_1.deletePost)(id);
+            await client.connect();
+            await client.DEL(`user${payload.id}`);
+            await client.disconnect();
+            await (0, postModel_1.deletePost)(id, post.userId);
+            return res.status(200).json({
+                msg: "пост был удалён"
+            });
         }
         if (post.userId != payload.id) {
-            return res.json({
+            return res.status(400).json({
                 msg: "у вас нет прав чтобы удалять пост"
             });
         }
-        await (0, postModel_1.deletePost)(id);
-        return res.json({
+        await client.connect();
+        await client.DEL(`user${payload.id}`);
+        await client.disconnect();
+        await (0, postModel_1.deletePost)(id, post.userId);
+        return res.status(200).json({
             msg: "пост был удалён"
         });
     }
     catch (e) {
         console.log(e);
-        return res.json({
+        return res.status(500).json({
             msg: "Eror"
         });
     }
@@ -92,38 +105,47 @@ const updataPostController = async (req, res) => {
         const id = Number(req.params.id);
         const { title } = req.body;
         if (!title) {
-            return res.json({
+            return res.status(400).json({
                 msg: "данные невалидные"
             });
         }
         const payload = getPayload(req, res);
         if (!payload) {
-            return res.json({
+            return res.status(400).json({
                 msg: "вы не авторизованы"
             });
         }
         const post = await (0, postModel_1.getPost)(id);
         if (!post) {
-            return res.json({
+            return res.status(400).json({
                 msg: "такого поста не существует"
             });
         }
         if (payload.role == "Admin") {
-            await (0, postModel_1.updataPost)(id, title);
+            await client.connect();
+            await client.DEL(`user${payload.id}`);
+            await client.disconnect();
+            await (0, postModel_1.updataPost)(id, post.userId, title);
+            return res.status(200).json({
+                msg: "пост был изменён"
+            });
         }
         if (post.userId != payload.id) {
             return res.json({
                 msg: "у вас нет прав чтобы изменить этот пост"
             });
         }
-        await (0, postModel_1.updataPost)(id, title);
-        return res.json({
+        await client.connect();
+        await client.DEL(`user${payload.id}`);
+        await client.disconnect();
+        await (0, postModel_1.updataPost)(id, post.userId, title);
+        return res.status(200).json({
             msg: "пост был изменён"
         });
     }
     catch (e) {
         console.log(e);
-        return res.json({
+        return res.status(500).json({
             msg: "Eror"
         });
     }
@@ -143,13 +165,13 @@ const addContentController = async (req, res) => {
     try {
         const id = Number(req.params.id);
         await (0, postModel_1.addContent)(id, req);
-        res.json({
+        res.status(200).json({
             msg: `ваш контент: ${req.file?.filename}`
         });
     }
     catch (e) {
         console.log(e);
-        return res.json({
+        return res.status(500).json({
             msg: "Eror"
         });
     }

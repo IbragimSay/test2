@@ -1,27 +1,23 @@
 import express,{Router} from 'express'
 import MiddelwareContent from '../Middleware/content'
 import { addContentController, createPostController, deletePostController, updataPostController, upload } from '../controllers/postController'
+import { getAllPosts } from '../controllers/postsController'
 
 const router = Router()
 
 /**
-* @openapi
-* /api/post/:
-*  post:
+ * @openapi
+* /api/posts/:
+*  get:
 *     tags:
-*     - API post
-*     description: add new post
+*     - API posts
+*     description: argentiono
 *     responses:
 *       200:
 *         description: App is up and running
-*       400:
-*         description: Error on the client side
 *       500:
 *         description: Server side problems
 */
-router.post("/", createPostController)
-router.delete("/:id", deletePostController)
-router.patch('/:id', updataPostController)
-router.post('/content/:id',MiddelwareContent, upload.single('content'), addContentController)
-router.use('/content', express.static("image"))
+router.get("/", getAllPosts)
+
 export = router

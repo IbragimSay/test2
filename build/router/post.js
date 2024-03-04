@@ -29,6 +29,21 @@ const express_1 = __importStar(require("express"));
 const content_1 = __importDefault(require("../Middleware/content"));
 const postController_1 = require("../controllers/postController");
 const router = (0, express_1.Router)();
+/**
+* @openapi
+* /api/post/:
+*  post:
+*     tags:
+*     - API post
+*     description: add new post
+*     responses:
+*       200:
+*         description: App is up and running
+*       400:
+*         description: Error on the client side
+*       500:
+*         description: Server side problems
+*/
 router.post("/", postController_1.createPostController);
 router.delete("/:id", postController_1.deletePostController);
 router.patch('/:id', postController_1.updataPostController);

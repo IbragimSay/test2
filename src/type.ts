@@ -1,11 +1,9 @@
-import { Role } from '@prisma/client';
-
 type TypeInfoBodyReg ={
     mail: string
     password: string
-    userName: string
     name:string
 }
+type Role = "Admin" | "User"
 
 type TypeInfoBodyLog = {
     mail: string
@@ -20,7 +18,11 @@ type TPost ={
 }
 
 type TUser = {
-    id: number; mail: string; password: string; name: string | null; userName: string; role: Role
+    id: number; 
+    mail: string; 
+    password: string; 
+    name: string | null; 
+    role: Role
 }
 
 export {TypeInfoBodyReg,TPost, TUser, TypeInfoBodyLog}

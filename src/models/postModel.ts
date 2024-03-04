@@ -3,6 +3,7 @@ import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { TPost } from '../type'
 
+
 const prisma = new PrismaClient()
 const createPost = async (payload:{id:number, role: string}, title: string):Promise<TPost | null>=>{
     const post = await prisma.post.create({
@@ -26,19 +27,15 @@ const getPost = async(id:number):Promise<TPost | null>=>{
     return post
 }
 
-const deletePost = async (id:number):Promise<TPost | null>=>{
-    const post = await prisma.post.delete({
+const deletePost = async (id:number, userId:number | null):Promise<void>=>{
+    await prisma.post.delete({
         where: {
             id
         }
     })
-    if(!post){
-        return null
-    }
-    return post
 }
 
-const updataPost = async(id:number, title:string)=>{
+const updataPost = async(id:number, userId:number | null, title:string):Promise<void>=>{
     await prisma.post.update({
         where: {
             id
@@ -49,7 +46,7 @@ const updataPost = async(id:number, title:string)=>{
     })
 }
 
-const addContent = async (id:number, req:Request)=>{
+const addContent = async (id:number, req:Request):Promise<void>=>{
     await prisma.post.update({
         where: {
             id

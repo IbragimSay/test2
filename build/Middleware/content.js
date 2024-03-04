@@ -5,9 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv/config");
 const client_1 = require("@prisma/client");
+const redis_1 = require("redis");
 const prisma = new client_1.PrismaClient();
 const SecretKey = process.env.SecretKey || 'my-secret';
+const client = (0, redis_1.createClient)();
 module.exports = async (req, res, next) => {
+    await client.connect();
     try {
         const token = req.headers.authorization?.split(' ')[1];
         const id = Number(req.params.id);
@@ -44,6 +47,7 @@ module.exports = async (req, res, next) => {
                 msg: "у вас нет прав чтобы добавлять контент на этот пост"
             });
         }
+        await client.DEL(`user${post.userId}`);
         next();
     }
     catch (e) {

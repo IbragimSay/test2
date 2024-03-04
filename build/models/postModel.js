@@ -26,19 +26,15 @@ const getPost = async (id) => {
     return post;
 };
 exports.getPost = getPost;
-const deletePost = async (id) => {
-    const post = await prisma.post.delete({
+const deletePost = async (id, userId) => {
+    await prisma.post.delete({
         where: {
             id
         }
     });
-    if (!post) {
-        return null;
-    }
-    return post;
 };
 exports.deletePost = deletePost;
-const updataPost = async (id, title) => {
+const updataPost = async (id, userId, title) => {
     await prisma.post.update({
         where: {
             id
