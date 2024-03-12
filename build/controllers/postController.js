@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.upload = exports.addContentController = exports.updataPostController = exports.deletePostController = exports.createPostController = void 0;
+exports.upload = exports.addContentController = exports.updataPostController = exports.deletePostController = exports.createPostController = exports.getPayload = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv/config");
 const multer_1 = __importDefault(require("multer"));
@@ -25,10 +25,11 @@ const getPayload = (req, res) => {
         }
     });
 };
+exports.getPayload = getPayload;
 const createPostController = async (req, res) => {
     try {
         const { title } = req.body;
-        const payload = getPayload(req, res);
+        const payload = (0, exports.getPayload)(req, res);
         if (!title) {
             return res.status(400).json({
                 msg: "данные невалидные"
@@ -58,7 +59,7 @@ exports.createPostController = createPostController;
 const deletePostController = async (req, res) => {
     try {
         const id = Number(req.params.id);
-        const payload = getPayload(req, res);
+        const payload = (0, exports.getPayload)(req, res);
         if (!payload) {
             return res.status(400).json({
                 msg: "вы не авторизованы"
@@ -109,7 +110,7 @@ const updataPostController = async (req, res) => {
                 msg: "данные невалидные"
             });
         }
-        const payload = getPayload(req, res);
+        const payload = (0, exports.getPayload)(req, res);
         if (!payload) {
             return res.status(400).json({
                 msg: "вы не авторизованы"

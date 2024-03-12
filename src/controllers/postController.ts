@@ -10,7 +10,7 @@ const client = createClient()
 
 const SecretKey = process.env.SecretKey || 'my-secret'
 
-const getPayload = (req:Request, res:Response):{id:number, role: string} | undefined=>{
+export const getPayload = (req:Request):{id:number, role: string} | undefined=>{
     const token:string | undefined = req.headers.authorization?.split(' ')[1]
     if(!token){
         return undefined
@@ -24,10 +24,11 @@ const getPayload = (req:Request, res:Response):{id:number, role: string} | undef
     }) as {id:number, role: string} | undefined
 }
 
+
 const createPostController = async (req: Request, res: Response)=>{
     try{
         const {title}: {title:string} = req.body
-        const payload = getPayload(req, res)
+        const payload = getPayload(req)
 
         if(!title){
             return res.status(400).json({
@@ -62,7 +63,7 @@ const deletePostController = async (req:Request, res:Response)=>{
     try{
         const id:number = Number(req.params.id)
     
-        const payload = getPayload(req, res)
+        const payload = getPayload(req)
         if(!payload){
             return res.status(400).json({
                 msg: "вы не авторизованы"
@@ -121,7 +122,7 @@ const updataPostController = async (req:Request, res:Response)=>{
             })
         }
 
-        const payload = getPayload(req, res)
+        const payload = getPayload(req)
         if(!payload){
             return res.status(400).json({
                 msg: "вы не авторизованы"
