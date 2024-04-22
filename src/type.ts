@@ -10,6 +10,7 @@ type TypeInfoBodyLog = {
     password: string
 }
 
+
 type TPost ={ 
     id: number; 
     title: string; 

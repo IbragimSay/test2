@@ -11,7 +11,7 @@ const redis_1 = require("redis");
 const postModel_1 = require("../models/postModel");
 const client = (0, redis_1.createClient)();
 const SecretKey = process.env.SecretKey || 'my-secret';
-const getPayload = (req, res) => {
+const getPayload = (req) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
         return undefined;
@@ -29,14 +29,14 @@ exports.getPayload = getPayload;
 const createPostController = async (req, res) => {
     try {
         const { title } = req.body;
-        const payload = (0, exports.getPayload)(req, res);
+        const payload = (0, exports.getPayload)(req);
         if (!title) {
             return res.status(400).json({
                 msg: "данные невалидные"
             });
         }
         if (!payload) {
-            return res.status(400).json({
+            return res.status(401).json({
                 msg: "вы не авторизованы"
             });
         }
@@ -59,7 +59,7 @@ exports.createPostController = createPostController;
 const deletePostController = async (req, res) => {
     try {
         const id = Number(req.params.id);
-        const payload = (0, exports.getPayload)(req, res);
+        const payload = (0, exports.getPayload)(req);
         if (!payload) {
             return res.status(400).json({
                 msg: "вы не авторизованы"
@@ -110,7 +110,7 @@ const updataPostController = async (req, res) => {
                 msg: "данные невалидные"
             });
         }
-        const payload = (0, exports.getPayload)(req, res);
+        const payload = (0, exports.getPayload)(req);
         if (!payload) {
             return res.status(400).json({
                 msg: "вы не авторизованы"

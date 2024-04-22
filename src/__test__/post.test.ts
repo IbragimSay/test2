@@ -1,35 +1,43 @@
-import { getPayload } from "../controllers/postController"
-import jwt from 'jsonwebtoken'
-import {Request} from 'express'
+import { PrismaClient} from "@prisma/client";
+import supertest from "supertest";
+import app from "../app";
+import { Request, Response} from "express";
+import { getPayload } from "../controllers/postController";
 import 'dotenv/config'
-const SecretKey = process.env.SecretKey || 'argen=ibragim'
 
+const SecretKey = process.env.SecretKey || "SecretKey"
 
-describe('test post', ()=>{
-    describe('test post function', ()=>{
-        test('test funtion getPayload', async () => {
-            const user = {
-                id: 3,
-                role: "User"
-            }
-            const token = "Bearer " + jwt.sign(user, SecretKey)
-            const reqest = {
-                headers: {
-                    authorization: token
-                }
-            } as Request
-            const res = getPayload(reqest)
-            expect(res?.id).toBe(user.id)
-        })
-        test('test funtion getPayload undefine', () => {
-            const token = 'undefine'
-            const reqest = {
-                headers: {
-                    authorization: token
-                }
-            } as Request
-            const res = getPayload(reqest)
-            expect(res).toBe(undefined)
-        })
+const prisma = new PrismaClient()
+import jwt from 'jsonwebtoken'
+
+describe("test function post", ()=>{
+  describe('function getPayload', ()=>{
+    test('ok', async ()=>{
+      const user: {
+        id: number,
+        role: string
+      } = {
+        id: 1,
+        role: "user"
+      } 
+      const token = jwt.sign(user, SecretKey)
+      const request = {
+        headers: {
+          authorization: "Bearer " + token
+        }
+      } as Request
+      const res = getPayload(request)
+      expect(res?.id).toBe(user.id)
     })
+    test("undefaund", ()=>{
+      const token = 'not token'
+      const request = {
+        headers: {
+          authorization: token
+        }
+      } as Request
+      const res = getPayload(request)
+      expect(res).toBe(undefined)
+    })
+  })
 })
